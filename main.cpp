@@ -96,10 +96,10 @@ double altitude;
 //uint16_t elevator=1500;
 //uint16_t throttle=1500;
 //uint16_t rudder=1500;
-uint16_t aileron=0;
-uint16_t elevator=0;
-uint16_t throttle=1500;
-uint16_t rudder=250;
+float aileron=0;
+float elevator=250;
+float throttle=1500;
+float rudder=0;
 
 
 int main()
@@ -411,18 +411,18 @@ int main()
 						if (flag)
 								{
 
-							rudder+=delt_servo;
-							//elevator+=delt_servo;
+							//rudder+=delt_servo;
+							elevator+=delt_servo;
 								}
 								else
 								{
-									rudder-=delt_servo;
-									//elevator-=delt_servo;
+									//rudder-=delt_servo;
+									elevator-=delt_servo;
 
 								}
 
-										if(rudder>1900 || rudder<1800)
-						//if(elevator>1900 || elevator<1100)
+										//if(rudder>1900 || rudder<1800)
+						if(elevator>450 || elevator<-450)
 										{
 										flag = !flag;
 										}
