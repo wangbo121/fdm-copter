@@ -106,6 +106,9 @@ Aircraft::Aircraft(const char *home_str, const char *frame_str) :
     location = home;
     ground_level = home.alt*0.01;
 
+    std::cout<<"location.lng="<<location.lng<<std::endl;
+    std::cout<<"location.lat="<<location.lat<<std::endl;
+
     dcm.from_euler(0, 0, radians(atof(yaw_s)));
     free(s);
 
@@ -308,8 +311,53 @@ void Aircraft::fill_fdm(struct sitl_fdm &fdm) const
 /*
    fill a sitl_fdm structure from the simulator state
 */
-void Aircraft::fill_fdm_flightgear(struct sitl_fdm &fdm) const
+void Aircraft::fill_fdm_flightgear( T_FDM &fdm) const
 {
+
+
+	   std::cout<<"location.longitude="<<location.lng<<std::endl;
+	    std::cout<<"location.latitude="<<location.lat<<std::endl;
+
+
+
+	fdm.version=24;
+	fdm.longitude=radians(location.lng * 1.0e-7);
+	fdm.latitude=radians(location.lat * 1.0e-7);
+
+
+	std::cout<<"fdm.longitude wangbo="<<fdm.longitude<<std::endl;
+	std::cout<<"fdm.latitude wangbo="<<fdm.latitude<<std::endl;
+
+
+	fdm.altitude=location.alt * 1.0e-2;
+
+	 float r, p, y;
+	dcm.to_euler(&r, &p, &y);
+	fdm.phi=r;
+	fdm.theta=p;
+	fdm.psi=y;
+
+	fdm.phidot=gyro.x;
+	fdm.thetadot=gyro.y;
+	fdm.psidot=gyro.z;
+
+	fdm.v_north=velocity_ef.x;
+	fdm.v_east=velocity_ef.y;
+	fdm.v_down=velocity_ef.z;
+
+	fdm.A_X_pilot=accel_body.x;
+	fdm.A_Y_pilot=accel_body.y;
+	fdm.A_Z_pilot=accel_body.z;
+
+	fdm.cur_time=time_now_us;
+
+	std::cout<<"fdm.phi="<<fdm.phi<<std::endl;
+	std::cout<<"fdm.theta="<<fdm.theta<<std::endl;
+	std::cout<<"fdm.psi="<<fdm.psi<<std::endl;
+	std::cout<<"fdm.altitude="<<fdm.altitude<<std::endl;
+
+
+#if 0
     fdm.timestamp_us = time_now_us;
     fdm.latitude  = location.lat * 1.0e-7;
     fdm.longitude = location.lng * 1.0e-7;
@@ -331,13 +379,12 @@ void Aircraft::fill_fdm_flightgear(struct sitl_fdm &fdm) const
     fdm.yawDeg   = degrees(y);
     fdm.airspeed = airspeed;
     fdm.magic = 0x4c56414f;
+#endif
 
 
 
-    std::cout<<"fdm.longitude="<<fdm.longitude<<std::endl;
-    std::cout<<"fdm.latitude="<<fdm.latitude<<std::endl;
-    std::cout<<"fdm.altitude="<<fdm.altitude<<std::endl;
-    std::cout<<"fdm.heading ="<<fdm.heading <<std::endl;
+
+
 }
 
 uint64_t Aircraft::get_wall_time_us() const

@@ -23,6 +23,7 @@
 #include "SITL.h"
 //#include <AP_Common/AP_Common.h>
 #include "BIT_MATH.h"
+#include "fdm.h"
 
 
 struct  Location_Option_Flags {
@@ -97,7 +98,7 @@ public:
 
     /* fill a sitl_fdm structure from the simulator state */
     void fill_fdm(struct sitl_fdm &fdm) const;
-    void Aircraft::fill_fdm_flightgear(struct sitl_fdm &fdm) const;
+    void fill_fdm_flightgear( T_FDM &fdm) const;
 
     Location home;
 protected:

@@ -41,7 +41,9 @@
 #include "SIM_Multicopter.h"
 #include "SITL.h"
 
-MultiCopter multi_copter("116,39,100,10","x");
+//MultiCopter multi_copter("120,48,100,10","x");
+MultiCopter multi_copter("-122.357,37.6136,100,10","x");
+//MultiCopter multi_copter("-122.357,37.6136,100,10","+");
 
 
 //MultiCopter multi_copter;
@@ -88,6 +90,18 @@ double longitude;
 double altitude;
 
 #define MOTOR_NUM 4
+
+
+//uint16_t aileron=1500;
+//uint16_t elevator=1500;
+//uint16_t throttle=1500;
+//uint16_t rudder=1500;
+uint16_t aileron=0;
+uint16_t elevator=0;
+uint16_t throttle=1500;
+uint16_t rudder=250;
+
+
 int main()
 {
 	/*
@@ -95,7 +109,11 @@ int main()
 	*/
 
 
-	uint16_t servos_set[16];
+
+
+
+	//uint16_t servos_set[16];
+	float servos_set[16];
 	servos_set[0]=1500;
 	servos_set[1]=1500;
 	servos_set[2]=1500;
@@ -184,8 +202,8 @@ int main()
 
 
 
-	double latitude = 45.59823; // degs
-	double longitude = -120.69202; // degs
+	double latitude = 30.59823; // degs
+	double longitude = 120.69202; // degs
 	double altitude = 150.0; // meters above sea level
 
 	float roll = 0.0; // degs
@@ -219,6 +237,7 @@ int main()
 
 		/*loopslow 慢循环*/
 		if(0 == main_task.maintask_cnt%LOOP_SLOW_TICK)
+		//if(0 == main_task.maintask_cnt%10)
 		{
 			sem_getvalue(&sem_loopslow,&sem_loopslow_cnt);
 			if(sem_loopslow_cnt<1)
@@ -346,37 +365,227 @@ int main()
 				flag = !flag;
 #else
 
-				if (flag)
-				{
-					servos_set[0] += 5.0;
-					servos_set[2] += 5.0;
-					servos_set[1] -= 5.0;
-					servos_set[3] -= 5.0;
-				}
-				else
-				{
-					servos_set[0] -= 5.0;
-					servos_set[2] -= 5.0;
-					servos_set[1] += 5.0;
-					servos_set[3] += 5.0;
-				}
-				flag = !flag;
+//				if (flag)
+//				{
+//					servos_set[0] += 5.0;
+//					servos_set[2] += 5.0;
+//					servos_set[1] += 5.0;
+//					servos_set[3] += 5.0;
+//				}
+//				else
+//				{
+//					servos_set[0] -= 5.0;
+//					servos_set[2] -= 5.0;
+//					servos_set[1] -= 5.0;
+//					servos_set[3] -= 5.0;
+//				}
 
+//				if(servos_set[0]>1900 || servos_set[0]<1200)
+//				{
+//					flag = !flag;
+//				}
+//
+//				double delt_servo=100;
+//				if (flag)
+//						{
+							//servos_set[0] += delt_servo;
+							//servos_set[2] += delt_servo;
+//							servos_set[1] -= delt_servo;
+							//servos_set[3] += delt_servo;
+//						}
+//						else
+//						{
+//							servos_set[0] -= delt_servo;
+							//servos_set[2] -= delt_servo;
+//							servos_set[1] += delt_servo;
+							//servos_set[3] -= delt_servo;
+//						}
+
+//				if(servos_set[2]>1900 || servos_set[2]<1100)
+//				{
+//				flag = !flag;
+//				}
+
+#if 1
+				double delt_servo=50;
+						if (flag)
+								{
+
+							rudder+=delt_servo;
+							//elevator+=delt_servo;
+								}
+								else
+								{
+									rudder-=delt_servo;
+									//elevator-=delt_servo;
+
+								}
+
+										if(rudder>1900 || rudder<1800)
+						//if(elevator>1900 || elevator<1100)
+										{
+										flag = !flag;
+										}
+#endif
+
+										//rudder=1600;
+										//throttle=1600;
+										//throttle=throttle+10;
+										//elevator=1800;
+
+
+					    float               _roll_factor[4]; // each motors contribution to roll
+					    float               _pitch_factor[4]; // each motors contribution to pitch
+					    float               _throttle_factor[4];
+					    float               _yaw_factor[4];  // each motors contribution to yaw (normally 1 or -1)
+
+					    /*
+					     * 这里给factor赋值-1 0 或者1
+					     */
+					    _roll_factor[0]  =  -1;  _pitch_factor[0]  =  +1; _throttle_factor[0]=+1; _yaw_factor[0]  = +1;
+					    _roll_factor[1]  =   +1;  _pitch_factor[1]  =  -1; _throttle_factor[1]=+1; _yaw_factor[1]  =  +1;
+					    _roll_factor[2]  = +1;  _pitch_factor[2]  =  +1;  _throttle_factor[2]=+1;_yaw_factor[2]  = -1;
+					    _roll_factor[3]  =  -1;  _pitch_factor[3]  = -1;  _throttle_factor[3]=+1;_yaw_factor[3]  =  -1;
+
+
+					    float r,p;
+
+					    r=aileron*0.5;
+					    p=elevator*0.5;
+
+						for(int i=0;i<4;i++)
+							{
+
+								/*
+								 * 一定要注意这里的throttle是用的radio_out，radio_out=pwm_out+radio_trim，
+								 * calc是把servo_out的-4500～+4500转为pwm的-500～+500
+								 * radio_out=pwm_out+radio_trim=pwm_out+1500 radio_out的范围是1000-2000
+								 */
+//							servos_set[i]=throttle*_throttle_factor[i]+ \
+//										                 roll*_roll_factor[i]+\
+//										                 pitch* _pitch_factor[i]+\
+//										                 rudder * _yaw_factor[i];
+
+														servos_set[i]=throttle*_throttle_factor[i]+ \
+																	                 r*_roll_factor[i]+\
+																	                 p* _pitch_factor[i]+\
+																	                 rudder * _yaw_factor[i];
+
+							}
 
 				std::cout<<"servos_set[0]="<<servos_set[0]<<std::endl;
-												std::cout<<"servos_set[1]="<<servos_set[1]<<std::endl;
-												std::cout<<"servos_set[2]="<<servos_set[2]<<std::endl;
-												std::cout<<"servos_set[3]="<<servos_set[3]<<std::endl;
+				std::cout<<"servos_set[1]="<<servos_set[1]<<std::endl;
+				std::cout<<"servos_set[2]="<<servos_set[2]<<std::endl;
+				std::cout<<"servos_set[3]="<<servos_set[3]<<std::endl;
+
+				for(int i=0;i<4;i++)
+				{
+					if(servos_set[i]<0)
+					{
+						servos_set[i]=100;
+
+					}
+
+				}
+
+				uint16_t servos_set_out[4];
+
+				for(int i=0;i<4;i++)
+				{
+					servos_set_out[i]=(uint16_t)servos_set[i];
+
+				}
+
+				std::cout<<"servos_set_out[0]="<<servos_set_out[0]<<std::endl;
+				std::cout<<"servos_set_out[1]="<<servos_set_out[1]<<std::endl;
+				std::cout<<"servos_set_out[2]="<<servos_set_out[2]<<std::endl;
+				std::cout<<"servos_set_out[3]="<<servos_set_out[3]<<std::endl;
 
 
 
+
+
+
+				//memcpy(input.servos,servos_set,sizeof(servos_set));
+				memcpy(input.servos,servos_set_out,sizeof(servos_set));
 
 				multi_copter.update(input);
 
 				sitl_fdm fdm_sitl;
 
+			//	T_FDM fdm_flightgear;
 
-				multi_copter.fill_fdm(fdm_sitl);
+
+				//multi_copter.fill_fdm(fdm_sitl);
+				multi_copter.fill_fdm_flightgear(fdm);
+
+//				fdm.psi=0.50;//yaw偏航角
+//				fdm.phi=0.5;//roll滚转角
+//				fdm.theta=0.5;//pitch俯仰角
+
+//				fdm.psi=hton_float(fdm.psi);
+//				fdm.phi=hton_float(fdm.phi);
+//				fdm.theta=hton_float(fdm.theta);
+//
+//				fdm.longitude=100.0;
+//				fdm.latitude=10.0;
+
+				//memset(&fdm,0,sizeof(fdm));
+				fdm.version = htonl(FG_NET_FDM_VERSION);
+
+				fdm.latitude = htond(fdm.latitude);
+				fdm.longitude = htond(fdm.longitude);
+				fdm.altitude = htond(fdm.altitude);
+
+//				fdm.longitude=110.0;
+//				fdm.latitude=130.0;
+//				fdm.latitude = htond(latitude * D2R);
+//				fdm.longitude = htond(longitude * D2R);
+
+//				std::cout<<"fdm.longitude="<<fdm.longitude<<std::endl;
+//							std::cout<<"fdm.latitude="<<fdm.latitude<<std::endl;
+
+				fdm.phi = htonf(fdm.phi );
+				fdm.theta = htonf(fdm.theta);
+				fdm.psi = htonf(fdm.psi);
+
+//				fdm.phi = htonf(roll * D2R);
+//							fdm.theta = htonf(pitch * D2R);
+//							fdm.psi = htonf(yaw * D2R);
+
+
+				fdm.num_engines = htonl(1);
+
+				fdm.num_tanks = htonl(1);
+				fdm.fuel_quantity[0] = htonf(100.0);
+
+				fdm.num_wheels = htonl(3);
+
+				fdm.cur_time = htonl(time(0));
+				fdm.warp = htonl(1);
+
+				fdm.visibility = htonf(visibility);
+#if 0
+				if (flag)
+				{
+					pitch += 5.0;
+					yaw+=10.0;
+					latitude+=5;
+					longitude+=5;
+
+				}
+				else
+				{
+					pitch -= 5.0;
+					yaw-=10.0;
+					latitude-=5;
+					longitude-=5;
+				}
+				flag = !flag;
+#endif
+
+
+				sendto(fd_sock_send, &fdm, sizeof(fdm), 0, (struct sockaddr *)&udp_sendto_addr, sizeof(udp_sendto_addr));
 
 
 
@@ -396,7 +605,7 @@ int main()
 			//send_udp_data((unsigned char*)&ap2fg_send,sizeof(ap2fg_send));
 
 			//send_udp_data((unsigned char*)&fdm,sizeof(fdm));
-			sendto(fd_sock_send, &fdm, sizeof(fdm), 0, (struct sockaddr *)&udp_sendto_addr, sizeof(udp_sendto_addr));
+			//sendto(fd_sock_send, &fdm, sizeof(fdm), 0, (struct sockaddr *)&udp_sendto_addr, sizeof(udp_sendto_addr));
 
 
 
