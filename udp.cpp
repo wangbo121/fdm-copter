@@ -5,9 +5,6 @@
  *      Author: wangbo
  */
 
-
-
-
 #include<stdio.h>
 #include <stdint.h>
 #include<sys/types.h>
@@ -87,6 +84,24 @@ float htonf (float x)
     *p = htonl(*p);
     return x;
 }
+
+int open_socket_udp_dev(int fd_socket, char* ip, unsigned int port)
+{
+	return 0;
+}
+
+int send_socket_udp_data(int fd_socket, unsigned char *buf, unsigned int len)
+{
+
+	return 0;
+}
+
+int read_socket_udp_data(int fd_socket, unsigned char *buf, unsigned int len)
+{
+
+	return 0;
+}
+
 
 
 int fd_sock_send;
