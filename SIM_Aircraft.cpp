@@ -351,6 +351,8 @@ void Aircraft::fill_fdm_flightgear( T_FDM &fdm) const
 
 	fdm.cur_time=time_now_us;
 
+	fdm.visibility=5000.0; // meters 可见范围
+
 	std::cout<<"fdm.phi="<<fdm.phi<<std::endl;
 	std::cout<<"fdm.theta="<<fdm.theta<<std::endl;
 	std::cout<<"fdm.psi="<<fdm.psi<<std::endl;

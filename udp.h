@@ -51,6 +51,8 @@ uint32_t x;
 #define PORT_RECEIVE 49005
 //#define PORT_RECEIVE 49000
 
+#define PORT_SENT_TO_GENERIC 5056
+
 struct T_UDP_DEVICE
 {
     //typedef unsigned long int pthread_t 为了不在头文件中增加其他头文件，这里把pthread fd换成unsigned long int fd;
@@ -79,6 +81,8 @@ double hton_double(double host_double) ;
 float ntoh_float(float net_float) ;
 float hton_float(float host_float) ;
 
+double htond (double x);
+float htonf (float x);
 
 
 extern struct sockaddr_in udp_sendto_addr;//服务器用于发送的socket

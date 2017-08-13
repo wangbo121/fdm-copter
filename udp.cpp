@@ -58,9 +58,6 @@ net_int64 = htonll(*((uint64_t *) &host_double));
 return *((double *) &net_int64);
 }
 
-
-
-
 float ntoh_float(float net_float) {
 	uint32_t host_int32;
 	host_int32 = ntohl(*((uint32_t *) &net_float));
@@ -74,7 +71,22 @@ float hton_float(float host_float) {
 
 }
 
+double htond (double x)
+{
+    int * p = (int*)&x;
+    int tmp = p[0];
+    p[0] = htonl(p[1]);
+    p[1] = htonl(tmp);
 
+    return x;
+}
+
+float htonf (float x)
+{
+    int * p = (int *)&x;
+    *p = htonl(*p);
+    return x;
+}
 
 
 int fd_sock_send;
