@@ -17,18 +17,53 @@
   parent class for aircraft simulators
 */
 
-#include <AP_HAL/AP_HAL.h>
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
-#include <AP_Common/AP_Common.h>
+
 #include "SIM_Aircraft.h"
 #include <unistd.h>
 #include <sys/time.h>
 #include <stdio.h>
-#ifdef __CYGWIN__
-#include <windows.h>
-#include <time.h>
-#include <Mmsystem.h>
-#endif
+#include <stdlib.h> //#define	RAND_MAX	2147483647
+#include <iostream>
+
+float longitude_scale(const struct Location &loc)
+{
+    float scale = cosf(loc.lat * 1.0e-7f * DEG_TO_RAD);
+    return constrain_float(scale, 0.01f, 1.0f);
+}
+
+unsigned char is_zero(float x)
+{
+	if(x==0.0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+
+}
+
+/*
+ *  extrapolate latitude/longitude given distances north and east
+ */
+void location_offset(struct Location &loc, float ofs_north, float ofs_east)
+{
+    if (!is_zero(ofs_north) || !is_zero(ofs_east))
+    {
+        int32_t dlat = ofs_north * LOCATION_SCALING_FACTOR_INV;
+        int32_t dlng = (ofs_east * LOCATION_SCALING_FACTOR_INV) / longitude_scale(loc);
+        loc.lat += dlat;
+        loc.lng += dlng;
+    }
+}
+
+void location_update(struct Location &loc, float bearing, float distance)
+{
+    float ofs_north = cosf(radians(bearing))*distance;
+    float ofs_east  = sinf(radians(bearing))*distance;
+    location_offset(loc, ofs_north, ofs_east);
+}
 
 /*
   parent class for all simulator types
@@ -261,6 +296,48 @@ void Aircraft::fill_fdm(struct sitl_fdm &fdm) const
     fdm.yawDeg   = degrees(y);
     fdm.airspeed = airspeed;
     fdm.magic = 0x4c56414f;
+
+
+
+    std::cout<<"fdm.longitude="<<fdm.longitude<<std::endl;
+    std::cout<<"fdm.latitude="<<fdm.latitude<<std::endl;
+    std::cout<<"fdm.altitude="<<fdm.altitude<<std::endl;
+    std::cout<<"fdm.heading ="<<fdm.heading <<std::endl;
+}
+
+/*
+   fill a sitl_fdm structure from the simulator state
+*/
+void Aircraft::fill_fdm_flightgear(struct sitl_fdm &fdm) const
+{
+    fdm.timestamp_us = time_now_us;
+    fdm.latitude  = location.lat * 1.0e-7;
+    fdm.longitude = location.lng * 1.0e-7;
+    fdm.altitude  = location.alt * 1.0e-2;
+    fdm.heading   = degrees(atan2f(velocity_ef.y, velocity_ef.x));
+    fdm.speedN    = velocity_ef.x;
+    fdm.speedE    = velocity_ef.y;
+    fdm.speedD    = velocity_ef.z;
+    fdm.xAccel    = accel_body.x;
+    fdm.yAccel    = accel_body.y;
+    fdm.zAccel    = accel_body.z;
+    fdm.rollRate  = degrees(gyro.x);
+    fdm.pitchRate = degrees(gyro.y);
+    fdm.yawRate   = degrees(gyro.z);
+    float r, p, y;
+    dcm.to_euler(&r, &p, &y);
+    fdm.rollDeg  = degrees(r);
+    fdm.pitchDeg = degrees(p);
+    fdm.yawDeg   = degrees(y);
+    fdm.airspeed = airspeed;
+    fdm.magic = 0x4c56414f;
+
+
+
+    std::cout<<"fdm.longitude="<<fdm.longitude<<std::endl;
+    std::cout<<"fdm.latitude="<<fdm.latitude<<std::endl;
+    std::cout<<"fdm.altitude="<<fdm.altitude<<std::endl;
+    std::cout<<"fdm.heading ="<<fdm.heading <<std::endl;
 }
 
 uint64_t Aircraft::get_wall_time_us() const
@@ -290,4 +367,4 @@ void Aircraft::set_speedup(float speedup)
 {
     setup_frame_time(rate_hz, speedup);
 }
-#endif // CONFIG_HAL_BOARD
+

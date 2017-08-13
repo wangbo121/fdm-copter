@@ -25,6 +25,7 @@
 #include<sys/socket.h>
 #include<netinet/in.h>
 #include<arpa/inet.h>
+#include <string.h>
 
 #include "maintask.h"
 #include "udp.h"
@@ -37,10 +38,15 @@
 //#include "quadcopter.h"
 #include "fdm.h"
 
+#include "SIM_Multicopter.h"
+#include "SITL.h"
+
+MultiCopter multi_copter("116,39,100,10","x");
 
 
 //MultiCopter multi_copter;
 T_FDM fdm;
+
 
 
 double htond (double x)
@@ -89,14 +95,30 @@ int main()
 	*/
 
 
-	double servos_set[MOTOR_NUM];
+	uint16_t servos_set[16];
 	servos_set[0]=1500;
 	servos_set[1]=1500;
 	servos_set[2]=1500;
 	servos_set[3]=1500;
 
 
+
+
+	Aircraft::sitl_input input;
+
+	memcpy(input.servos,servos_set,sizeof(servos_set));
+
+	//memset(input,0,sizeof(input));
+
+
+
+
+//	multi_copter.update(input);
+
 	//multi_copter.update(servos_set,fdm);
+	std::cout<<"multicopter="<<multi_copter.home.lng<<std::endl;
+	std::cout<<"multicopter="<<multi_copter.home.lat<<std::endl;
+	std::cout<<"multicopter="<<multi_copter.home.alt<<std::endl;
 
 
 	printf("sizeof(float)=%d\n",sizeof(float));
@@ -341,26 +363,28 @@ int main()
 				flag = !flag;
 
 
-
-
-
-
-				servos_set[0]=1500;
-				servos_set[1]=1500;
-				servos_set[2]=1500;
-				servos_set[3]=1500;
-
 				std::cout<<"servos_set[0]="<<servos_set[0]<<std::endl;
-								std::cout<<"servos_set[1]="<<servos_set[1]<<std::endl;
-								std::cout<<"servos_set[2]="<<servos_set[2]<<std::endl;
-								std::cout<<"servos_set[3]="<<servos_set[3]<<std::endl;
+												std::cout<<"servos_set[1]="<<servos_set[1]<<std::endl;
+												std::cout<<"servos_set[2]="<<servos_set[2]<<std::endl;
+												std::cout<<"servos_set[3]="<<servos_set[3]<<std::endl;
+
+
+
+
+				multi_copter.update(input);
+
+				sitl_fdm fdm_sitl;
+
+
+				multi_copter.fill_fdm(fdm_sitl);
+
 
 
 				//multi_copter.update(servos_set,&fdm);
-
-				std::cout<<"fdm.psi="<<fdm.psi<<std::endl;
-				std::cout<<"fdm.phi="<<fdm.phi<<std::endl;
-				std::cout<<"fdm.theta="<<fdm.theta<<std::endl;
+//
+//				std::cout<<"fdm.psi="<<fdm.psi<<std::endl;
+//				std::cout<<"fdm.phi="<<fdm.phi<<std::endl;
+//				std::cout<<"fdm.theta="<<fdm.theta<<std::endl;
 
 
 

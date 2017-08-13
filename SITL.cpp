@@ -18,111 +18,111 @@
     SITL.cpp - software in the loop state
 */
 
-#include <AP_Common/AP_Common.h>
-#include <AP_HAL/AP_HAL.h>
-#include <GCS_MAVLink/GCS_MAVLink.h>
+//#include <AP_Common/AP_Common.h>
+//#include <AP_HAL/AP_HAL.h>
+//#include <GCS_MAVLink/GCS_MAVLink.h>
 #include "SITL.h"
+//
+//extern const AP_HAL::HAL& hal;
+//
+//// table of user settable parameters
+//const AP_Param::GroupInfo SITL::var_info[] PROGMEM = {
+//    AP_GROUPINFO("BARO_RND",   0, SITL,  baro_noise,  0.2f),
+//    AP_GROUPINFO("GYR_RND",    1, SITL,  gyro_noise,  0),
+//    AP_GROUPINFO("ACC_RND",    2, SITL,  accel_noise, 0),
+//    AP_GROUPINFO("MAG_RND",    3, SITL,  mag_noise,   0),
+//    AP_GROUPINFO("GPS_DISABLE",4, SITL,  gps_disable, 0),
+//    AP_GROUPINFO("DRIFT_SPEED",5, SITL,  drift_speed, 0.05f),
+//    AP_GROUPINFO("DRIFT_TIME", 6, SITL,  drift_time,  5),
+//    AP_GROUPINFO("GPS_DELAY",  7, SITL,  gps_delay,   1),
+//    AP_GROUPINFO("ENGINE_MUL", 8, SITL,  engine_mul,  1),
+//    AP_GROUPINFO("WIND_SPD",   9, SITL,  wind_speed,  0),
+//    AP_GROUPINFO("WIND_DIR",  10, SITL,  wind_direction,  180),
+//    AP_GROUPINFO("WIND_TURB", 11, SITL,  wind_turbulance,  0),
+//    AP_GROUPINFO("GPS_TYPE",  12, SITL,  gps_type,  SITL::GPS_TYPE_UBLOX),
+//    AP_GROUPINFO("GPS_BYTELOSS",  13, SITL,  gps_byteloss,  0),
+//    AP_GROUPINFO("GPS_NUMSATS",   14, SITL,  gps_numsats,   10),
+//    AP_GROUPINFO("MAG_ERROR",     15, SITL,  mag_error,  0),
+//    AP_GROUPINFO("SERVO_RATE",    16, SITL,  servo_rate,  0),
+//    AP_GROUPINFO("GPS_GLITCH",    17, SITL,  gps_glitch,  0),
+//    AP_GROUPINFO("GPS_HZ",        18, SITL,  gps_hertz,  5),
+//    AP_GROUPINFO("BATT_VOLTAGE",  19, SITL,  batt_voltage,  12.6f),
+//    AP_GROUPINFO("ASPD_RND",      20, SITL,  aspd_noise,  0.5f),
+//    AP_GROUPINFO("ACCEL_FAIL",    21, SITL,  accel_fail,  0),
+//    AP_GROUPINFO("BARO_DRIFT",    22, SITL,  baro_drift,  0),
+//    AP_GROUPINFO("SONAR_GLITCH",  23, SITL,  sonar_glitch, 0),
+//    AP_GROUPINFO("SONAR_RND",     24, SITL,  sonar_noise, 0),
+//    AP_GROUPINFO("RC_FAIL",       25, SITL,  rc_fail, 0),
+//    AP_GROUPINFO("GPS2_ENABLE",   26, SITL,  gps2_enable, 0),
+//    AP_GROUPINFO("BARO_DISABLE",  27, SITL,  baro_disable, 0),
+//    AP_GROUPINFO("FLOAT_EXCEPT",  28, SITL,  float_exception, 1),
+//    AP_GROUPINFO("MAG_MOT",       29, SITL,  mag_mot, 0),
+//    AP_GROUPINFO("ACC_BIAS",      30, SITL,  accel_bias, 0),
+//    AP_GROUPINFO("BARO_GLITCH",   31, SITL,  baro_glitch, 0),
+//    AP_GROUPINFO("SONAR_SCALE",   32, SITL,  sonar_scale, 12.1212f),
+//    AP_GROUPINFO("FLOW_ENABLE",   33, SITL,  flow_enable, 0),
+//    AP_GROUPINFO("TERRAIN",       34, SITL,  terrain_enable, 1),
+//    AP_GROUPINFO("FLOW_RATE",     35, SITL,  flow_rate, 10),
+//    AP_GROUPINFO("FLOW_DELAY",    36, SITL,  flow_delay, 0),
+//    AP_GROUPINFO("GPS_DRIFTALT",  37, SITL,  gps_drift_alt, 0),
+//    AP_GROUPINFO("BARO_DELAY",    38, SITL,  baro_delay, 0),
+//    AP_GROUPINFO("MAG_DELAY",     39, SITL,  mag_delay, 0),
+//    AP_GROUPINFO("WIND_DELAY",    40, SITL,  wind_delay, 0),
+//    AP_GROUPINFO("MAG_OFS",       41, SITL,  mag_ofs, 0),
+//    AP_GROUPINFO("ACC2_RND",      42, SITL,  accel2_noise, 0),
+//    AP_GROUPINFO("ARSP_FAIL",     43, SITL,  aspd_fail, 0),
+//    AP_GROUPEND
+//};
 
-extern const AP_HAL::HAL& hal;
-
-// table of user settable parameters
-const AP_Param::GroupInfo SITL::var_info[] PROGMEM = {
-    AP_GROUPINFO("BARO_RND",   0, SITL,  baro_noise,  0.2f),
-    AP_GROUPINFO("GYR_RND",    1, SITL,  gyro_noise,  0),
-    AP_GROUPINFO("ACC_RND",    2, SITL,  accel_noise, 0),
-    AP_GROUPINFO("MAG_RND",    3, SITL,  mag_noise,   0),
-    AP_GROUPINFO("GPS_DISABLE",4, SITL,  gps_disable, 0),
-    AP_GROUPINFO("DRIFT_SPEED",5, SITL,  drift_speed, 0.05f),
-    AP_GROUPINFO("DRIFT_TIME", 6, SITL,  drift_time,  5),
-    AP_GROUPINFO("GPS_DELAY",  7, SITL,  gps_delay,   1),
-    AP_GROUPINFO("ENGINE_MUL", 8, SITL,  engine_mul,  1),
-    AP_GROUPINFO("WIND_SPD",   9, SITL,  wind_speed,  0),
-    AP_GROUPINFO("WIND_DIR",  10, SITL,  wind_direction,  180),
-    AP_GROUPINFO("WIND_TURB", 11, SITL,  wind_turbulance,  0),
-    AP_GROUPINFO("GPS_TYPE",  12, SITL,  gps_type,  SITL::GPS_TYPE_UBLOX),
-    AP_GROUPINFO("GPS_BYTELOSS",  13, SITL,  gps_byteloss,  0),
-    AP_GROUPINFO("GPS_NUMSATS",   14, SITL,  gps_numsats,   10),
-    AP_GROUPINFO("MAG_ERROR",     15, SITL,  mag_error,  0),
-    AP_GROUPINFO("SERVO_RATE",    16, SITL,  servo_rate,  0),
-    AP_GROUPINFO("GPS_GLITCH",    17, SITL,  gps_glitch,  0),
-    AP_GROUPINFO("GPS_HZ",        18, SITL,  gps_hertz,  5),
-    AP_GROUPINFO("BATT_VOLTAGE",  19, SITL,  batt_voltage,  12.6f),
-    AP_GROUPINFO("ASPD_RND",      20, SITL,  aspd_noise,  0.5f),
-    AP_GROUPINFO("ACCEL_FAIL",    21, SITL,  accel_fail,  0),
-    AP_GROUPINFO("BARO_DRIFT",    22, SITL,  baro_drift,  0),
-    AP_GROUPINFO("SONAR_GLITCH",  23, SITL,  sonar_glitch, 0),
-    AP_GROUPINFO("SONAR_RND",     24, SITL,  sonar_noise, 0),
-    AP_GROUPINFO("RC_FAIL",       25, SITL,  rc_fail, 0),
-    AP_GROUPINFO("GPS2_ENABLE",   26, SITL,  gps2_enable, 0),
-    AP_GROUPINFO("BARO_DISABLE",  27, SITL,  baro_disable, 0),
-    AP_GROUPINFO("FLOAT_EXCEPT",  28, SITL,  float_exception, 1),
-    AP_GROUPINFO("MAG_MOT",       29, SITL,  mag_mot, 0),
-    AP_GROUPINFO("ACC_BIAS",      30, SITL,  accel_bias, 0),
-    AP_GROUPINFO("BARO_GLITCH",   31, SITL,  baro_glitch, 0),
-    AP_GROUPINFO("SONAR_SCALE",   32, SITL,  sonar_scale, 12.1212f),
-    AP_GROUPINFO("FLOW_ENABLE",   33, SITL,  flow_enable, 0),
-    AP_GROUPINFO("TERRAIN",       34, SITL,  terrain_enable, 1),
-    AP_GROUPINFO("FLOW_RATE",     35, SITL,  flow_rate, 10),
-    AP_GROUPINFO("FLOW_DELAY",    36, SITL,  flow_delay, 0),
-    AP_GROUPINFO("GPS_DRIFTALT",  37, SITL,  gps_drift_alt, 0),
-    AP_GROUPINFO("BARO_DELAY",    38, SITL,  baro_delay, 0),
-    AP_GROUPINFO("MAG_DELAY",     39, SITL,  mag_delay, 0),
-    AP_GROUPINFO("WIND_DELAY",    40, SITL,  wind_delay, 0),
-    AP_GROUPINFO("MAG_OFS",       41, SITL,  mag_ofs, 0),
-    AP_GROUPINFO("ACC2_RND",      42, SITL,  accel2_noise, 0),
-    AP_GROUPINFO("ARSP_FAIL",     43, SITL,  aspd_fail, 0),
-    AP_GROUPEND
-};
-
-
-/* report SITL state via MAVLink */
-void SITL::simstate_send(mavlink_channel_t chan)
-{
-    float yaw;
-
-    // convert to same conventions as DCM
-    yaw = state.yawDeg;
-    if (yaw > 180) {
-        yaw -= 360;
-    }
-
-    mavlink_msg_simstate_send(chan,
-                              ToRad(state.rollDeg),
-                              ToRad(state.pitchDeg),
-                              ToRad(yaw),
-                              state.xAccel,
-                              state.yAccel,
-                              state.zAccel,
-                              radians(state.rollRate), 
-                              radians(state.pitchRate), 
-                              radians(state.yawRate), 
-                              state.latitude*1.0e7,
-                              state.longitude*1.0e7);
-}
+//
+///* report SITL state via MAVLink */
+//void SITL::simstate_send(mavlink_channel_t chan)
+//{
+//    float yaw;
+//
+//    // convert to same conventions as DCM
+//    yaw = state.yawDeg;
+//    if (yaw > 180) {
+//        yaw -= 360;
+//    }
+//
+//    mavlink_msg_simstate_send(chan,
+//                              ToRad(state.rollDeg),
+//                              ToRad(state.pitchDeg),
+//                              ToRad(yaw),
+//                              state.xAccel,
+//                              state.yAccel,
+//                              state.zAccel,
+//                              radians(state.rollRate),
+//                              radians(state.pitchRate),
+//                              radians(state.yawRate),
+//                              state.latitude*1.0e7,
+//                              state.longitude*1.0e7);
+//}
 
 /* report SITL state to DataFlash */
-void SITL::Log_Write_SIMSTATE(DataFlash_Class &DataFlash)
-{
-    float yaw;
-
-    // convert to same conventions as DCM
-    yaw = state.yawDeg;
-    if (yaw > 180) {
-        yaw -= 360;
-    }
-
-    struct log_AHRS pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_SIMSTATE_MSG),
-        time_us : hal.scheduler->micros64(),
-        roll    : (int16_t)(state.rollDeg*100),
-        pitch   : (int16_t)(state.pitchDeg*100),
-        yaw     : (uint16_t)(wrap_360_cd(yaw*100)),
-        alt     : (float)state.altitude,
-        lat     : (int32_t)(state.latitude*1.0e7),
-        lng     : (int32_t)(state.longitude*1.0e7)
-    };
-    DataFlash.WriteBlock(&pkt, sizeof(pkt));
-}
+//void SITL::Log_Write_SIMSTATE(DataFlash_Class &DataFlash)
+//{
+//    float yaw;
+//
+//    // convert to same conventions as DCM
+//    yaw = state.yawDeg;
+//    if (yaw > 180) {
+//        yaw -= 360;
+//    }
+//
+//    struct log_AHRS pkt = {
+//        LOG_PACKET_HEADER_INIT(LOG_SIMSTATE_MSG),
+//        time_us : hal.scheduler->micros64(),
+//        roll    : (int16_t)(state.rollDeg*100),
+//        pitch   : (int16_t)(state.pitchDeg*100),
+//        yaw     : (uint16_t)(wrap_360_cd(yaw*100)),
+//        alt     : (float)state.altitude,
+//        lat     : (int32_t)(state.latitude*1.0e7),
+//        lng     : (int32_t)(state.longitude*1.0e7)
+//    };
+//    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+//}
 
 /*
  convert a set of roll rates from earth frame to body frame

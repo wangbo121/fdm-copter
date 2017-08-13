@@ -17,10 +17,14 @@
   multicopter simulator class
 */
 
-#include <AP_HAL/AP_HAL.h>
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
+
 #include "SIM_Multicopter.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+//#include "BIT_MATH.h"
+
+
 
 Motor m(90,  false,  1);
 
@@ -109,7 +113,7 @@ MultiCopter::MultiCopter(const char *home_str, const char *frame_str) :
     terminal_velocity(15.0),
     terminal_rotation_rate(4*radians(360.0))
 {
-    for (uint8_t i=0; i < ARRAY_SIZE(supported_frames); i++) {
+    for (uint8_t i=0; i < 4; i++) {
         if (strcasecmp(frame_str, supported_frames[i].name) == 0) {
             frame = &supported_frames[i];
         }
@@ -148,6 +152,8 @@ void MultiCopter::update(const struct sitl_input &input)
     // how much time has passed?
     float delta_time = frame_time_us * 1.0e-6f;
 
+    std::cout<<"delta_time="<<delta_time<<std::endl;
+
     // rotational acceleration, in rad/s/s, in body frame
     Vector3f rot_accel;
     float thrust = 0.0f; // newtons
@@ -167,6 +173,12 @@ void MultiCopter::update(const struct sitl_input &input)
     rot_accel.x -= gyro.x * radians(5000.0) / terminal_rotation_rate;
     rot_accel.y -= gyro.y * radians(5000.0) / terminal_rotation_rate;
     rot_accel.z -= gyro.z * radians(400.0)  / terminal_rotation_rate;
+
+    std::cout<<"terminal_rotation_rate="<<terminal_rotation_rate<<std::endl;
+
+    std::cout<<"rot_accel.x="<<rot_accel.x<<std::endl;
+    std::cout<<"rot_accel.y="<<rot_accel.y<<std::endl;
+    std::cout<<"rot_accel.z="<<rot_accel.z<<std::endl;
 
     // update rotational rates in body frame
     gyro += rot_accel * delta_time;
@@ -204,6 +216,8 @@ void MultiCopter::update(const struct sitl_input &input)
     Vector3f old_position = position;
     position += velocity_ef * delta_time;
 
+
+
     // assume zero wind for now
     airspeed = velocity_ef.length();
 
@@ -212,7 +226,7 @@ void MultiCopter::update(const struct sitl_input &input)
         if (!on_ground(old_position)) {
             printf("Hit ground at %f m/s\n", velocity_ef.z);
 
-            velocity_ef.zero();
+            //velocity_ef.zero();
 
             // zero roll/pitch, but keep yaw
             float r, p, y;
@@ -226,4 +240,4 @@ void MultiCopter::update(const struct sitl_input &input)
     // update lat/lon/altitude
     update_position();
 }
-#endif // CONFIG_HAL_BOARD
+
